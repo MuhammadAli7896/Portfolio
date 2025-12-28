@@ -63,12 +63,12 @@ let numbersOfRings = [0];
 export function Globe({ globeConfig, data }: WorldProps) {
   const [globeData, setGlobeData] = useState<
     | {
-        size: number;
-        order: number;
-        color: (t: number) => string;
-        lat: number;
-        lng: number;
-      }[]
+      size: number;
+      order: number;
+      color: (t: number) => string;
+      lat: number;
+      lng: number;
+    }[]
     | null
   >(null);
 
@@ -92,11 +92,11 @@ export function Globe({ globeConfig, data }: WorldProps) {
   };
 
   useEffect(() => {
-    if (globeRef.current) {
+    if (globeRef.current && data && data.length > 0) {
       _buildData();
       _buildMaterial();
     }
-  }, [globeRef.current]);
+  }, [globeRef.current, data]);
 
   const _buildMaterial = () => {
     if (!globeRef.current) return;
@@ -114,11 +114,21 @@ export function Globe({ globeConfig, data }: WorldProps) {
   };
 
   const _buildData = () => {
+    if (!data || data.length === 0) return;
+
     const arcs = data;
     let points = [];
     for (let i = 0; i < arcs.length; i++) {
       const arc = arcs[i];
+      // Validate arc data
+      if (!arc || typeof arc.startLat !== 'number' || typeof arc.startLng !== 'number' ||
+        typeof arc.endLat !== 'number' || typeof arc.endLng !== 'number') {
+        continue;
+      }
+
       const rgb = hexToRgb(arc.color) as { r: number; g: number; b: number };
+      if (!rgb) continue;
+
       points.push({
         size: defaultProps.pointSize,
         order: arc.order,
@@ -165,10 +175,22 @@ export function Globe({ globeConfig, data }: WorldProps) {
   }, [globeData]);
 
   const startAnimation = () => {
-    if (!globeRef.current || !globeData) return;
+    if (!globeRef.current || !globeData || !data || data.length === 0) return;
+
+    // Validate all arc data before setting
+    const validArcs = data.filter(arc =>
+      arc &&
+      typeof arc.startLat === 'number' && !isNaN(arc.startLat) &&
+      typeof arc.startLng === 'number' && !isNaN(arc.startLng) &&
+      typeof arc.endLat === 'number' && !isNaN(arc.endLat) &&
+      typeof arc.endLng === 'number' && !isNaN(arc.endLng) &&
+      typeof arc.arcAlt === 'number' && !isNaN(arc.arcAlt)
+    );
+
+    if (validArcs.length === 0) return;
 
     globeRef.current
-      .arcsData(data)
+      .arcsData(validArcs)
       .arcStartLat((d) => (d as { startLat: number }).startLat * 1)
       .arcStartLng((d) => (d as { startLng: number }).startLng * 1)
       .arcEndLat((d) => (d as { endLat: number }).endLat * 1)
@@ -186,7 +208,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
       .arcDashAnimateTime((e) => defaultProps.arcTime);
 
     globeRef.current
-      .pointsData(data)
+      .pointsData(validArcs)
       .pointColor((e) => (e as { color: string }).color)
       .pointsMerge(true)
       .pointAltitude(0.0)
@@ -203,19 +225,27 @@ export function Globe({ globeConfig, data }: WorldProps) {
   };
 
   useEffect(() => {
-    if (!globeRef.current || !globeData) return;
+    if (!globeRef.current || !globeData || !data || data.length === 0) return;
 
     const interval = setInterval(() => {
-      if (!globeRef.current || !globeData) return;
+      if (!globeRef.current || !globeData || !data || data.length === 0) return;
+
       numbersOfRings = genRandomNumbers(
         0,
         data.length,
         Math.floor((data.length * 4) / 5)
       );
 
-      globeRef.current.ringsData(
-        globeData.filter((d, i) => numbersOfRings.includes(i))
-      );
+      const validRingsData = globeData.filter((d, i) => {
+        if (!numbersOfRings.includes(i)) return false;
+        // Validate lat/lng are valid numbers
+        return typeof d.lat === 'number' && !isNaN(d.lat) &&
+          typeof d.lng === 'number' && !isNaN(d.lng);
+      });
+
+      if (validRingsData.length > 0) {
+        globeRef.current.ringsData(validRingsData);
+      }
     }, 2000);
 
     return () => {
@@ -287,10 +317,10 @@ export function hexToRgb(hex: string) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    }
     : null;
 }
 

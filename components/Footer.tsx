@@ -4,6 +4,7 @@ import { socialMedia } from "@/data";
 import MagicButton from "./MagicButton";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
   return (
     <footer className="w-full pt-20 pb-10 mb-[100px] md:mb-5" id="contact">
       {/* background grid */}
@@ -34,7 +35,7 @@ const Footer = () => {
       </div>
       <div className="flex mt-16 md:flex-row flex-col justify-between items-center">
         <p className="md:text-base text-sm md:font-normal font-light">
-          Copyright © 2024 Muhammad Ali
+          Copyright © {currentYear} Muhammad Ali
         </p>
 
         <div className="flex items-center md:gap-3 gap-6 max-md:mt-4">

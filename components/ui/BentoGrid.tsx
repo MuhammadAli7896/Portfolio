@@ -1,8 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import { IoCopyOutline } from "react-icons/io5";
-
-// Also install this npm i --save-dev @types/react-lottie
-import Lottie from "react-lottie";
+import Lottie from "lottie-react";
 
 import { cn } from "@/lib/utils";
 
@@ -56,15 +56,6 @@ export const BentoGridItem = ({
   const rightLists = ["React", "Next.js", "MongoDB"];
 
   const [copied, setCopied] = useState(false);
-
-  const defaultOptions = {
-    loop: copied,
-    autoplay: copied,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
-  };
 
   const handleCopy = () => {
     const text = "muhammadali30804@gmail.com";
@@ -179,8 +170,13 @@ export const BentoGridItem = ({
                 className={`absolute -bottom-5 right-0 ${copied ? "block" : "block"
                   }`}
               >
-                {/* <img src="/confetti.gif" alt="confetti" /> */}
-                <Lottie options={defaultOptions} height={200} width={400} />
+                {copied && (
+                  <Lottie
+                    animationData={animationData}
+                    loop={true}
+                    style={{ height: 200, width: 400 }}
+                  />
+                )}
               </div>
 
               <MagicButton
