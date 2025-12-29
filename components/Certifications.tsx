@@ -75,7 +75,9 @@ const CertificationHoverEffect = () => {
                                     />
                                 </div>
 
-                                <CardTitle className="text-lg">{cert.title}</CardTitle>
+                                <div title={cert.title}>
+                                    <CardTitle className="text-lg line-clamp-1">{cert.title}</CardTitle>
+                                </div>
 
                                 {/* Issuer and Date */}
                                 <div className="flex items-center gap-2 mt-2 mb-3">
